@@ -10,7 +10,7 @@ A beautiful, immersive web-based music player that presents album art with a stu
 - **File-based Playback**: Upload your local audio or video files to play.
 - **Automatic Metadata & Artwork Extraction**: Uses FFmpeg/FFprobe on the backend to automatically extract the song title, artist, and album art.
 - **Optimized for Web**: Transcodes various audio formats into the web-friendly Opus codec on the fly.
-- **Keyboard Controls**: Control playback (`Space` for Play/Pause, `R` for Restart) and UI (`F` for Fullscreen, `H` to hide controls).
+- **Keyboard Controls**: Control playback (`Space` for Play/Pause, `R` for Restart) and UI (`F` for Fullscreen).
 - **Automatic Cache Management**: The server-side cache for processed audio and artwork is cleared automatically on page load and after playback.
 
 ## Tech Stack
