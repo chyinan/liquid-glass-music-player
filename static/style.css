@@ -1,0 +1,213 @@
+/* --- Basic Setup --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-text-color: #f0f0f0;
+    --secondary-text-color: #b0b0b0;
+    --accent-color: #fff;
+    --background-color: #000;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--primary-text-color);
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Blurred Background --- */
+#background-blur {
+    position: fixed;
+    top: -30px;
+    left: -30px;
+    right: -30px;
+    bottom: -30px;
+    background-size: cover;
+    background-position: center;
+    filter: blur(40px) brightness(0.75);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+
+#background-blur.active {
+    opacity: 1;
+}
+
+/* --- Main Container --- */
+.container {
+    width: 100%;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Initial File Upload Screen --- */
+.file-select-container {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(10, 10, 10, 0.5);
+    border-radius: 16px;
+}
+
+.file-select-container h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.file-select-container p { color: var(--secondary-text-color); font-size: 1.1rem; margin-bottom: 2rem; }
+input[type="file"] { display: none; }
+
+.custom-file-upload {
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.custom-file-upload:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+}
+
+/* --- NEW SVG-based Liquid Glass Effect --- */
+#player-wrapper {
+    position: relative;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+#player-ui-distorted-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border-radius: 24px;
+    filter: url(#liquid-distortion);
+    z-index: 1;
+}
+
+/* --- Liquid Glass Player UI (Adjusted) --- */
+#player-ui-glass {
+    position: relative;
+    z-index: 2;
+    width: 100%; /* Changed to fill the wrapper */
+    background: rgba(30, 30, 30, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 2rem 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+}
+
+.settings-wrapper { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; z-index: 10; }
+.setting-item { display: flex; align-items: center; }
+
+#visual-container {
+    width: clamp(200px, 60vw, 300px);
+    height: clamp(200px, 60vw, 300px);
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 16px;
+    flex-shrink: 0;
+}
+
+#visual-container img {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+#info-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+#audio-info { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+
+.info-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
+    line-height: 1.2;
+}
+
+.info-artist {
+    font-size: 1.1rem;
+    color: var(--primary-text-color);
+    line-height: 1.2;
+}
+
+.player-controls { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+
+#time-info {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--primary-text-color);
+    padding: 0 5px;
+}
+
+.progress-bar-container.simple { width: 100%; height: 4px; background-color: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+.progress-bar-fill { height: 100%; background-color: var(--accent-color); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+
+/* --- Loading Indicator --- */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid var(--accent-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+.loading-overlay p { margin-top: 1rem; font-size: 0.9rem; color: var(--secondary-text-color); }
+
+/* --- Utility Classes --- */
+.hidden { display: none !important; }
+.ui-hidden { opacity: 0 !important; pointer-events: none !important; }
+.visually-hidden { opacity: 0; pointer-events: none; }
+.setting-item { transition: opacity 0.3s ease-in-out; }
