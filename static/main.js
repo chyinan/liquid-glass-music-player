@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const playerWrapper = document.getElementById('player-wrapper');
     const distortedBg = document.getElementById('player-ui-distorted-bg');
+    const playerUIGlass = document.getElementById('player-ui-glass');
     
     const albumArt = document.getElementById('albumArt');
     const artistNameEl = document.getElementById('artistName');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let hasStartedPlayback = false; // Flag to prevent looping
     let isUIVisible = true;
     let isInFullscreen = false;
+    let isMinimalMode = false;
     let artworkUrl = null;
     let currentProcessedFile = null;
     let currentArtworkFile = null;
@@ -146,6 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             case ' ': if (audio.src) isPlaying ? pauseAudio() : playAudio(); break;
             case 'r': if (audio.src) { audio.currentTime = 0; if (!isPlaying) playAudio(); } break;
             case 'f': toggleFullscreen(); break;
+            case 'v': toggleMinimalView(); break;
             default: return;
         }
         event.preventDefault();
@@ -181,6 +184,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     
+    // === Minimal View Toggle ===
+    function toggleMinimalView() {
+        isMinimalMode = !isMinimalMode;
+        playerUIGlass.classList.toggle('minimal-mode', isMinimalMode);
+        
+        // Also toggle container class for width override
+        const container = document.querySelector('.container');
+        if (container) {
+            container.classList.toggle('minimal-active', isMinimalMode);
+        }
+        
+        // Also toggle player wrapper class for width override
+        if (playerWrapper) {
+            playerWrapper.classList.toggle('minimal-active', isMinimalMode);
+        }
+    }
+
     // === Utility Functions ===
     async function clearProcessedCacheOnLoad() {
         try {

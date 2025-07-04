@@ -1,3 +1,18 @@
+/* 
+=== GPU硬件加速优化说明 ===
+本CSS已针对GPU性能进行优化：
+1. 所有动画元素都使用will-change属性预告变化
+2. translateZ()强制创建独立复合层，避免重绘
+3. backface-visibility: hidden 优化3D性能
+4. 使用transform属性而非位置属性进行动画
+5. 每个复合层使用唯一的translateZ值避免层合并
+
+性能监控：
+- 建议使用Chrome DevTools的Layers面板检查复合层
+- 建议使用Performance面板监控60FPS渲染性能
+- 低端设备可考虑降低动画复杂度
+*/
+
 /* --- Basic Setup --- */
 *, *::before, *::after {
     box-sizing: border-box;
@@ -29,12 +44,20 @@ body {
     left: -30px;
     right: -30px;
     bottom: -30px;
-    background-size: cover;
+    background-size: 120% 120%; /* 稍微放大以便流动 */
     background-position: center;
-    filter: blur(40px) brightness(0.75);
+    filter: blur(50px) brightness(0.7);
     z-index: -1;
     opacity: 0;
     transition: opacity 0.8s ease-in-out;
+    
+    /* GPU硬件加速优化 */
+    will-change: transform, background-position, opacity;
+    transform: translateZ(0.003px); /* 独立的复合层ID */
+    backface-visibility: hidden;
+    
+    /* 添加更慢的背景流动效果 */
+    animation: slowBackgroundFlow 120s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 #background-blur.active {
@@ -49,6 +72,23 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    
+    /* GPU优化 */
+    will-change: transform;
+    transform: translateZ(0.005px); /* 为容器创建复合层 */
+    backface-visibility: hidden;
+}
+
+/* --- Minimal Mode Container Override --- */
+.container:has(#player-ui-glass.minimal-mode) {
+    max-width: 98vw; /* Allow more width for minimal mode */
+    width: 98vw; /* Full viewport width */
+}
+
+/* Backup for browsers that don't support :has() */
+.container.minimal-active {
+    max-width: 98vw !important;
+    width: 98vw !important;
 }
 
 /* --- Initial File Upload Screen --- */
@@ -86,6 +126,24 @@ input[type="file"] { display: none; }
     max-width: 450px;
     border-radius: 24px;
     overflow: hidden;
+    
+    /* GPU优化 */
+    will-change: transform;
+    transform: translateZ(0.006px); /* 为wrapper创建复合层 */
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* Override wrapper constraints in minimal mode */
+#player-wrapper:has(#player-ui-glass.minimal-mode) {
+    max-width: none;
+    width: auto;
+}
+
+/* Backup for browsers that don't support :has() */
+#player-wrapper.minimal-active {
+    max-width: none !important;
+    width: auto !important;
 }
 
 #player-ui-distorted-bg {
@@ -94,11 +152,20 @@ input[type="file"] { display: none; }
     left: 0;
     width: 100%;
     height: 100%;
-    background-size: cover;
+    background-size: cover; /* 保持原始比例 */
     background-position: center;
     border-radius: 24px;
     filter: url(#liquid-distortion);
     z-index: 1;
+    
+    /* GPU硬件加速优化 */
+    will-change: transform, background-position;
+    transform: translateZ(0.001px); /* 强制创建复合层，避免重绘 */
+    backface-visibility: hidden; /* 隐藏元素背面，优化3D性能 */
+    perspective: 1000px; /* 启用3D渲染上下文 */
+    
+    /* 添加流动动画 */
+    animation: flowingBackground 90s cubic-bezier(0.4, 0.0, 0.6, 1.0) infinite;
 }
 
 /* --- Liquid Glass Player UI (Adjusted) --- */
@@ -106,18 +173,23 @@ input[type="file"] { display: none; }
     position: relative;
     z-index: 2;
     width: 100%; /* Changed to fill the wrapper */
-    background: rgba(30, 30, 30, 0.25);
+    background: rgba(255, 255, 255, 0.12);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(14px) saturate(1.8);
+    -webkit-backdrop-filter: blur(14px) saturate(1.8);
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     padding: 2rem 2rem 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     text-align: center;
+    
+    /* GPU优化 */
+    will-change: transform;
+    transform: translateZ(0.002px); /* 为玻璃面板创建独立复合层 */
+    backface-visibility: hidden;
 }
 
 .settings-wrapper { position: absolute; top: 1rem; right: 1rem; display: flex; gap: 0.5rem; z-index: 10; }
@@ -204,6 +276,110 @@ input[type="file"] { display: none; }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+/* 水流般的自然流动背景动画 - GPU优化版本 */
+@keyframes flowingBackground {
+    0% {
+        background-position: 35% 42%;
+        transform: translateZ(0.001px) scale(1.15) rotate(0.2deg);
+    }
+    12% {
+        background-position: 52% 28%;
+        transform: translateZ(0.001px) scale(1.22) rotate(-0.3deg);
+    }
+    27% {
+        background-position: 71% 55%;
+        transform: translateZ(0.001px) scale(1.18) rotate(0.4deg);
+    }
+    41% {
+        background-position: 48% 73%;
+        transform: translateZ(0.001px) scale(1.25) rotate(-0.1deg);
+    }
+    58% {
+        background-position: 22% 61%;
+        transform: translateZ(0.001px) scale(1.20) rotate(0.5deg);
+    }
+    72% {
+        background-position: 67% 39%;
+        transform: translateZ(0.001px) scale(1.23) rotate(-0.4deg);
+    }
+    86% {
+        background-position: 44% 18%;
+        transform: translateZ(0.001px) scale(1.17) rotate(0.2deg);
+    }
+    100% {
+        background-position: 35% 42%;
+        transform: translateZ(0.001px) scale(1.15) rotate(0.2deg);
+    }
+}
+
+/* 主背景的自然流动 - GPU优化版本 */
+@keyframes slowBackgroundFlow {
+    0% {
+        background-position: 45% 38%;
+        transform: translateZ(0.003px) scale(1.03) rotate(0.1deg);
+    }
+    20% {
+        background-position: 58% 52%;
+        transform: translateZ(0.003px) scale(1.05) rotate(-0.1deg);
+    }
+    45% {
+        background-position: 42% 65%;
+        transform: translateZ(0.003px) scale(1.02) rotate(0.15deg);
+    }
+    68% {
+        background-position: 55% 44%;
+        transform: translateZ(0.003px) scale(1.04) rotate(-0.05deg);
+    }
+    85% {
+        background-position: 48% 29%;
+        transform: translateZ(0.003px) scale(1.03) rotate(0.08deg);
+    }
+    100% {
+        background-position: 45% 38%;
+        transform: translateZ(0.003px) scale(1.03) rotate(0.1deg);
+    }
+}
+
+/* 极简模式下的液态流动 - 高性能GPU版本 */
+@keyframes enhancedFlowingBackground {
+    0% {
+        background-position: 28% 35%;
+        transform: translateZ(0.004px) scale(1.15) rotate(0.08deg);
+    }
+    8% {
+        background-position: 71% 18%;
+        transform: translateZ(0.004px) scale(1.18) rotate(-0.12deg);
+    }
+    19% {
+        background-position: 46% 82%;
+        transform: translateZ(0.004px) scale(1.12) rotate(0.15deg);
+    }
+    32% {
+        background-position: 83% 59%;
+        transform: translateZ(0.004px) scale(1.20) rotate(-0.05deg);
+    }
+    47% {
+        background-position: 15% 73%;
+        transform: translateZ(0.004px) scale(1.16) rotate(0.18deg);
+    }
+    61% {
+        background-position: 59% 24%;
+        transform: translateZ(0.004px) scale(1.19) rotate(-0.10deg);
+    }
+    76% {
+        background-position: 37% 91%;
+        transform: translateZ(0.004px) scale(1.14) rotate(0.12deg);
+    }
+    88% {
+        background-position: 92% 42%;
+        transform: translateZ(0.004px) scale(1.17) rotate(-0.08deg);
+    }
+    100% {
+        background-position: 28% 35%;
+        transform: translateZ(0.004px) scale(1.15) rotate(0.08deg);
+    }
+}
+
 .loading-overlay p { margin-top: 1rem; font-size: 0.9rem; color: var(--secondary-text-color); }
 
 /* --- Utility Classes --- */
@@ -211,3 +387,84 @@ input[type="file"] { display: none; }
 .ui-hidden { opacity: 0 !important; pointer-events: none !important; }
 .visually-hidden { opacity: 0; pointer-events: none; }
 .setting-item { transition: opacity 0.3s ease-in-out; }
+
+/* --- Minimal Mode Styles (New) --- */
+#player-ui-glass.minimal-mode {
+    flex-direction: row;
+    align-items: center;
+    gap: 4rem;
+    padding: 4rem 6rem; /* Increased horizontal padding for better balance */
+    width: fit-content; /* Fit content with some margin */
+    min-width: 90vw; /* Increased minimum width for better presence */
+    max-width: none; /* Remove max-width constraint completely */
+    height: 60vh; /* Set a substantial height like in the reference */
+    min-height: 500px; /* Increased minimum height for better presence */
+    max-height: 80vh; /* Reasonable maximum height to prevent overflow */
+    
+
+}
+
+/* 极简模式下的更强烈流动效果 */
+#player-ui-glass.minimal-mode ~ #player-ui-distorted-bg {
+    animation: enhancedFlowingBackground 300s cubic-bezier(0.42, 0.0, 0.58, 1.0) infinite;
+    background-size: cover; /* 保持原始比例，避免人脸等图像被拉伸变形 */
+    
+    /* 极简模式下的强化GPU优化 */
+    will-change: transform, background-position;
+    transform: translateZ(0.004px); /* 为极简模式创建专用复合层 */
+    backface-visibility: hidden;
+    perspective: 2000px; /* 增强3D渲染性能 */
+    transform-style: preserve-3d; /* 保持3D变换上下文 */
+}
+
+#player-ui-glass.minimal-mode #visual-container {
+    width: clamp(300px, 25vh, 400px); /* Responsive size based on viewport height */
+    height: clamp(300px, 25vh, 400px); /* Responsive size based on viewport height */
+    margin: 0;
+    flex-shrink: 0;
+}
+
+#player-ui-glass.minimal-mode #info-wrapper {
+    flex-grow: 1;
+    align-items: flex-start;
+    justify-content: center; /* Center content vertically */
+    text-align: left;
+    gap: 1.5rem; /* Slightly increased gap for better spacing */
+    height: 100%; /* Take full height of parent */
+    flex-grow: 1; /* Allow text area to grow */
+    min-width: 0; /* Allow text to overflow properly */
+    max-width: none; /* Remove width constraint to allow full usage */
+    flex-basis: 70%; /* Give text area more base width */
+    
+
+}
+
+#player-ui-glass.minimal-mode #audio-info {
+    margin-bottom: 0;
+    gap: 0.5rem;
+    align-items: flex-start;
+    width: 100%; /* Ensure full width usage */
+}
+
+#player-ui-glass.minimal-mode .info-title {
+    font-size: clamp(2.5rem, 5vw, 6rem); /* Increased font size range for bigger panel */
+    font-weight: 700;
+    letter-spacing: -2px;
+    /* Remove white-space: nowrap to allow wrapping */
+    overflow: visible; /* Ensure text is visible */
+    line-height: 1.1; /* Tighter line spacing */
+}
+
+#player-ui-glass.minimal-mode .info-artist {
+    font-size: clamp(1.2rem, 2.5vw, 3rem); /* Increased font size range for bigger panel */
+    font-weight: 500;
+    opacity: 0.9;
+    /* Remove white-space: nowrap to allow wrapping */
+    overflow: visible; /* Ensure text is visible */
+    line-height: 1.2; /* Comfortable line spacing */
+    margin-top: 0.5rem; /* Add some space between title and artist */
+}
+
+#player-ui-glass.minimal-mode .player-controls {
+    display: none;
+}

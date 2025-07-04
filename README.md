@@ -3,6 +3,7 @@
 A beautiful, immersive web-based music player that presents album art with a stunning "liquid glass" effect. It features a minimalist interface, real-time audio processing on the backend, and a fluid, distorted background that reflects the song's artwork.
 
 ![Screenshot](https://github.com/chyinan/liquid-glass-music-player/blob/main/screenshot.png) <!-- Placeholder for a screenshot -->
+![Screenshot](https://github.com/chyinan/liquid-glass-music-player/blob/main/screenshot2.png)
 
 ## Features
 
